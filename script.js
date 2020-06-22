@@ -16,7 +16,9 @@ window.onload = function() {
 		
 		var controls = new THREE.OrbitControls( camera, renderer.domElement );
 		controls.target.set( 0, 0, 0 );
-		camera.position.set( 0, 14, 0 );		
+	
+		camera.position.set( -10, 0, 0 );			
+		
 		controls.update();
 		
 		
@@ -45,17 +47,7 @@ window.onload = function() {
 		
 
 		/***ARRAYS FIELD AND FIGURE***/
-		var field = [	
-						[
-							[1,1,1,1,1,1,1,1], /***0***/
-							[1,1,1,1,1,1,1,1],
-							[1,1,1,1,1,1,1,1],
-							[1,1,1,1,1,1,1,1],
-							[1,1,1,1,1,1,1,1],
-							[1,1,1,1,1,1,1,1],
-							[1,1,1,1,1,1,1,1],
-							[1,1,1,1,1,1,1,1]
-						],
+		var field = [					
 						
 						[
 							[1,1,1,1,1,1,1,1], /***1***/
@@ -167,6 +159,16 @@ window.onload = function() {
 							[1,1,1,1,1,1,1,1]
 						],					
 						
+						[
+							[1,1,1,1,1,1,1,1], /***0***/
+							[1,1,1,1,1,1,1,1],
+							[1,1,1,1,1,1,1,1],
+							[1,1,1,1,1,1,1,1],
+							[1,1,1,1,1,1,1,1],
+							[1,1,1,1,1,1,1,1],
+							[1,1,1,1,1,1,1,1],
+							[1,1,1,1,1,1,1,1]
+						],
 					];
 
 
@@ -175,7 +177,7 @@ window.onload = function() {
 		var figure = [
 						 [[0,0,0],
 						  [0,0,0],
-						  [0,1,0]],
+						  [0,0,0]],
 						
 						 [[0,1,1],
 						  [0,2,0],
@@ -188,12 +190,17 @@ window.onload = function() {
 					];
 					
 		
-		/*******************/
+		/********ПЕРЕМЕННЫЕ*******/
 		
+		var x = 1;
+		var y = 0;
+		var z = 0;
+		var timer, timeout;
 		
-		addScene_field();		
-		addScene();			
-		renderer.render( scene, camera );		
+		/********/
+		
+		animate();	
+		
 		
 		
 		/***********Управление*************/
@@ -201,32 +208,91 @@ window.onload = function() {
 			if (e.keyCode === 65) {	/***A***/			
 				clearScene();				
 				figure = rotate90_x(figure, true);
+				if (collision(figure, field, x , y, z)) {
+					figure = rotate90_x(figure, false);
+					console.log('Столкновение При повороте');
+				}
 				addScene_field();					
 				addScene();				
 			};			
 			if (e.keyCode === 87) {	/***W***/			
 				clearScene();			
 				figure = rotate90_y(figure, false);	
+				if (collision(figure, field, x , y, z)) {
+					figure = rotate90_y(figure, true);
+					console.log('Столкновение При повороте');
+				}
 				addScene_field();
 				addScene();					
 			};
 			if (e.keyCode === 68) { /***D***/				
 				clearScene();				
 				figure = rotate90_x(figure, false);	
+				if (collision(figure, field, x , y, z)) {
+					figure = rotate90_x(figure, true);
+					console.log('Столкновение При повороте');
+				}
 				addScene_field();
 				addScene();				
 			};			
 			if (e.keyCode === 83) { /***S***/				
 				clearScene();				
-				figure = rotate90_y(figure, true);	
+				figure = rotate90_y(figure, true);
+				if (collision(figure, field, x , y, z)) {
+					figure = rotate90_y(figure, false);
+					console.log('Столкновение При повороте');
+				}
 				addScene_field();
 				addScene();				
-			};				
+			};	
+
+			if (e.keyCode === 38) {	/***Up***/			
+				clearScene();				
+				x++;
+				if (collision(figure, field, x , y, z)) {
+					x--;
+					console.log('Границаup');
+				}
+				addScene_field();					
+				addScene();				
+			};			
+			if (e.keyCode === 40) {	/***Down***/			
+				clearScene();
+				x--;	
+				if (collision(figure, field, x , y, z)) {
+					x++;
+					console.log('Границаdown');
+				}
+				addScene_field();
+				addScene();					
+			};			
+			
+			if (e.keyCode === 37) {	/***Left***/			
+				clearScene();				
+				z--;
+				if (collision(figure, field, x , y, z)) {
+					z++;
+					console.log('Границаleft');
+				}
+				addScene_field();					
+				addScene();				
+			};			
+			if (e.keyCode === 39) {	/***Right***/			
+				clearScene();
+				z++;	
+				if (collision(figure, field, x , y, z)) {
+					z--;
+					console.log('Границаright');
+				}
+				addScene_field();
+				addScene();					
+			};
+			
 			renderer.render( scene, camera );			
 		}
 		
 		
-		window.onmousedown = animate;		
+		window.onmousedown = animate_camera;		
 		window.onresize = resize;
 		
 		
@@ -238,15 +304,46 @@ window.onload = function() {
 			camera.updateProjectionMatrix();
 		}
 		
-		function animate() {
-
-			requestAnimationFrame( animate );	
+		function animate_camera() {
+			requestAnimationFrame( animate_camera );	
 			controls.target.set( 0, 0, 0 );		
-			camera.position.set( 0, 14, 0 );//убрать строку для вращения камеры
+			camera.position.set( -10, 0, 0 );	//убрать строку для вращения камеры
 			controls.update();
 			renderer.render( scene, camera );
-
 		}
+		
+		
+		function animate() {
+			timeout = setTimeout(function() {	
+				timer = window.requestAnimationFrame(animate);
+				y++;	
+			}, 1000);
+			
+			
+			if (collision(figure, field, x, y, z)) {
+				y--;
+				window.cancelAnimationFrame(timer);
+				clearTimeout(timeout);
+				console.log('Столкновение');
+			}
+			clearScene();
+			addScene_field();		
+			addScene();	
+			renderer.render( scene, camera );
+		}
+	
+		
+		function collision(arr1, arr2, dx, dy, dz) {	
+				
+			for (let i = 0; i < arr1.length; ++i) 	
+				for (let j = 0; j < arr1[i].length; ++j)	
+					for (let k = 0; k < arr1[i][j].length; ++k) {	
+						if ((arr1[i][j][k])&&(arr2[i+dy][j+dx][k+dz])) { 					
+							return true;
+						}
+				}
+			return false;
+		}	
 		
 		
 		function addScene() {
@@ -255,19 +352,19 @@ window.onload = function() {
 					for (let k = 0; k < figure[i][j].length; ++k)					
 					{
 						if (figure[i][j][k]) {
-							let wireframe = new THREE.LineSegments( geo_line, mat_line );
-							wireframe.position.set( k, i, j );
+							let wireframe = new THREE.LineSegments( geo_line, mat_line );							
+							wireframe.position.set( i+y, j-3+x, k-3+z );
 							scene.add( wireframe );
 						}
 						if (figure[i][j][k] === 1) {
 							let cube = new THREE.Mesh( geometry, material );
-							cube.position.set( k, i, j );							
+							cube.position.set( i+y, j-3+x, k-3+z );							
 							scene.add(cube);
 							
 						}	
 						else if (figure[i][j][k] === 2){
 							let cube = new THREE.Mesh( geometry, material_center_figure );
-							cube.position.set( k, i, j );							
+							cube.position.set( i+y, j-3+x, k-3+z );							
 							scene.add(cube);
 							
 						}
@@ -282,10 +379,10 @@ window.onload = function() {
 					{	
 						if (field[i][j][k]) {
 							let cube_field = new THREE.Mesh( geometry, material_field );
-							cube_field.position.set( k-3, i-9, j-3 );							
+							cube_field.position.set( i, j-3, k-3);						
 							scene.add(cube_field);
 							let wireframe = new THREE.LineSegments( geo_line, mat_line );
-							wireframe.position.set( k-3, i-9, j-3);
+							wireframe.position.set( i, j-3, k-3);
 							scene.add( wireframe );
 						}							
 					}
