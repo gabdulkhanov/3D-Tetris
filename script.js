@@ -1,51 +1,12 @@
 window.onload = function() {
-	
-		var width = window.innerWidth-50;
-		var height = window.innerHeight-50;	
-	
-		var scene = new THREE.Scene();
-		var camera = new THREE.PerspectiveCamera( 45, width / height, 0.1, 5000 );		
+		/**********ДАННЫЕ************/		
 		
-		var renderer = new THREE.WebGLRenderer();
+		var x = 2;
+		var y = 0;
+		var z = 1;
+		var pause = false;
+		var timer, timeout;
 		
-		document.body.appendChild( renderer.domElement );
-		
-		renderer.setSize( width, height );
-		renderer.setClearColor(0x000000);
-		
-		
-		var controls = new THREE.OrbitControls( camera, renderer.domElement );
-		controls.target.set( 0, 0, 0 );
-	
-		camera.position.set( -10, 0, 0 );			
-		
-		controls.update();
-		
-		
-		/****LIGHT****/
-		{
-			var light = new THREE.DirectionalLight(0xffffff, 1);
-			light.position.set(-1, 2, 4);
-			scene.add(light);
-			
-			var light2 = new THREE.DirectionalLight(0xffffff, 1);
-			light2.position.set(1, -2, -4);
-			scene.add(light2);
-		}
-
-		/****GEOMETRY AND MATERIAL******/
-		var geometry = new THREE.BoxGeometry(1 ,1 ,1);
-		var material = new THREE.MeshPhongMaterial( { color: 0xffffff} );	
-		var material_center_figure = new THREE.MeshPhongMaterial( { color: 0xff0000} );	
-
-		var material_field = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );		
-		
-		
-		/***РЁБРА КУБА***/
-		var geo_line = new THREE.EdgesGeometry( geometry );
-		var mat_line = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 4} );	
-		
-
 		/***ARRAYS FIELD AND FIGURE***/
 		var field = [					
 						
@@ -188,29 +149,83 @@ window.onload = function() {
 						  [0,0,0]],						  
 						
 					];
-					
 		
-		/********ПЕРЕМЕННЫЕ*******/
+	
+		/**************************/
 		
-		var x = 1;
-		var y = 0;
-		var z = 0;
-		var timer, timeout;
+		var width = window.innerWidth-50;
+		var height = window.innerHeight-50;	
+		var scene = new THREE.Scene();
+		var camera = new THREE.PerspectiveCamera( 45, width / height, 0.1, 5000 );		
+		var renderer = new THREE.WebGLRenderer();		
+		document.body.appendChild( renderer.domElement );		
+		renderer.setSize( width, height );
+		renderer.setClearColor(0x000000);		
 		
-		/********/
+		var controls = new THREE.OrbitControls( camera, renderer.domElement );
+		controls.target.set( 0, 0, 0 );	
+		camera.position.set( -10, 0, 0 );		
+		controls.update();
 		
-		animate();	
+		
+		/****LIGHT****/
+		{
+			var light = new THREE.DirectionalLight(0xffffff, 1);
+			light.position.set(-1, 2, 4);
+			scene.add(light);
+			
+			var light2 = new THREE.DirectionalLight(0xffffff, 1);
+			light2.position.set(1, -2, -4);
+			scene.add(light2);
+		}
+
+		/****GEOMETRY AND MATERIAL******/
+		var geometry = new THREE.BoxGeometry(1 ,1 ,1);
+		var material = new THREE.MeshPhongMaterial( { color: 0xffffff} );	
+		var material_center_figure = new THREE.MeshPhongMaterial( { color: 0xff0000} );	
+
+
+
+		var material_field = [	new THREE.MeshPhongMaterial( { color: 0xe87e0c } ),
+								new THREE.MeshPhongMaterial( { color: 0x0a0345 } ),
+								new THREE.MeshPhongMaterial( { color: 0x11d4f2 } ),
+								new THREE.MeshPhongMaterial( { color: 0x9ba9e0 } ),
+								new THREE.MeshPhongMaterial( { color: 0x0000ff } ),
+								new THREE.MeshPhongMaterial( { color: 0x0ce8e4 } ),
+								new THREE.MeshPhongMaterial( { color: 0xd52adb } ),
+								new THREE.MeshPhongMaterial( { color: 0x40ff00 } ), //4
+								new THREE.MeshPhongMaterial( { color: 0xeb092f } ), //3
+								new THREE.MeshPhongMaterial( { color: 0xe6f035 } ), //2
+								new THREE.MeshPhongMaterial( { color: 0x1015c2 } )  //1
+							];
+		
+		
+		
+		/***РЁБРА КУБА***/
+		var geo_line = new THREE.EdgesGeometry( geometry );
+		var mat_line = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 4} );		
+
+		
+		
+		/***********МОДАЛЬНОЕ ОКНО***********/
+		var ok = document.getElementById("ok");
+		var openModal = document.getElementById("openModal");
+		
+		ok.onclick = function() {
+			openModal.style.display = "none";
+			openModal.style.pointerEvents = "none";
+			animate();
+		}		
 		
 		
 		
 		/***********Управление*************/
 		window.onkeydown = function(e) {
-			if (e.keyCode === 65) {	/***A***/			
+			if (e.keyCode === 68) {	/***D***/			
 				clearScene();				
 				figure = rotate90_x(figure, true);
 				if (collision(figure, field, x , y, z)) {
-					figure = rotate90_x(figure, false);
-					console.log('Столкновение При повороте');
+					figure = rotate90_x(figure, false);					
 				}
 				addScene_field();					
 				addScene();				
@@ -219,18 +234,16 @@ window.onload = function() {
 				clearScene();			
 				figure = rotate90_y(figure, false);	
 				if (collision(figure, field, x , y, z)) {
-					figure = rotate90_y(figure, true);
-					console.log('Столкновение При повороте');
+					figure = rotate90_y(figure, true);					
 				}
 				addScene_field();
 				addScene();					
 			};
-			if (e.keyCode === 68) { /***D***/				
+			if (e.keyCode === 65) { /***A***/				
 				clearScene();				
 				figure = rotate90_x(figure, false);	
 				if (collision(figure, field, x , y, z)) {
-					figure = rotate90_x(figure, true);
-					console.log('Столкновение При повороте');
+					figure = rotate90_x(figure, true);					
 				}
 				addScene_field();
 				addScene();				
@@ -239,8 +252,7 @@ window.onload = function() {
 				clearScene();				
 				figure = rotate90_y(figure, true);
 				if (collision(figure, field, x , y, z)) {
-					figure = rotate90_y(figure, false);
-					console.log('Столкновение При повороте');
+					figure = rotate90_y(figure, false);					
 				}
 				addScene_field();
 				addScene();				
@@ -250,8 +262,7 @@ window.onload = function() {
 				clearScene();				
 				x++;
 				if (collision(figure, field, x , y, z)) {
-					x--;
-					console.log('Границаup');
+					x--;					
 				}
 				addScene_field();					
 				addScene();				
@@ -260,8 +271,7 @@ window.onload = function() {
 				clearScene();
 				x--;	
 				if (collision(figure, field, x , y, z)) {
-					x++;
-					console.log('Границаdown');
+					x++;					
 				}
 				addScene_field();
 				addScene();					
@@ -271,8 +281,7 @@ window.onload = function() {
 				clearScene();				
 				z--;
 				if (collision(figure, field, x , y, z)) {
-					z++;
-					console.log('Границаleft');
+					z++;					
 				}
 				addScene_field();					
 				addScene();				
@@ -281,12 +290,26 @@ window.onload = function() {
 				clearScene();
 				z++;	
 				if (collision(figure, field, x , y, z)) {
-					z--;
-					console.log('Границаright');
+					z--;					
 				}
 				addScene_field();
 				addScene();					
 			};
+			
+			if (e.keyCode === 32) {	/***Space***/			
+				clearScene();
+				while (!collision(figure, field, x , y, z)) y++;	
+				if (collision(figure, field, x , y, z)) {
+					y--;					
+				}
+				addScene_field();
+				addScene();					
+			};
+			if (event.keyCode == 80) { /***p***/
+				pause = !pause;
+				animate();
+			}
+			
 			
 			renderer.render( scene, camera );			
 		}
@@ -294,6 +317,11 @@ window.onload = function() {
 		
 		window.onmousedown = animate_camera;		
 		window.onresize = resize;
+		
+		
+		
+		
+		
 		
 		
 		/*********Функции**************/
@@ -314,17 +342,28 @@ window.onload = function() {
 		
 		
 		function animate() {
-			timeout = setTimeout(function() {	
-				timer = window.requestAnimationFrame(animate);
-				y++;	
-			}, 1000);
+			if (!pause) {
+				timeout = setTimeout(function() {	
+					timer = window.requestAnimationFrame(animate);
+					y++;	
+				}, 1000);
+			}
+			else {
+				console.log("Pause");
+				window.cancelAnimationFrame(timer);
+				clearTimeout(timeout);
+			}
 			
 			
 			if (collision(figure, field, x, y, z)) {
-				y--;
-				window.cancelAnimationFrame(timer);
-				clearTimeout(timeout);
-				console.log('Столкновение');
+				y--;				
+				
+				update_field(figure, field, x, y, z);
+				color_field(field);
+				x = 2;
+				y = 0;
+				z = 2;				
+			
 			}
 			clearScene();
 			addScene_field();		
@@ -332,6 +371,14 @@ window.onload = function() {
 			renderer.render( scene, camera );
 		}
 	
+		
+		function update_field(figura_arr, field_arr, dx, dy, dz) {
+			for (let i = 0; i < figura_arr.length; ++i) 	
+				for (let j = 0; j < figura_arr[i].length; ++j)	
+					for (let k = 0; k < figura_arr[i][j].length; ++k){				
+						if (figura_arr[i][j][k]) field_arr[i+dy][j+dx][k+dz] = figura_arr[i][j][k];
+				}
+		}
 		
 		function collision(arr1, arr2, dx, dy, dz) {	
 				
@@ -378,15 +425,26 @@ window.onload = function() {
 					for (let k = 0; k < field[i][j].length; ++k)					
 					{	
 						if (field[i][j][k]) {
-							let cube_field = new THREE.Mesh( geometry, material_field );
+							let cube_field = new THREE.Mesh( geometry, material_field[field[i][j][k]-1] );												
 							cube_field.position.set( i, j-3, k-3);						
 							scene.add(cube_field);
+								
 							let wireframe = new THREE.LineSegments( geo_line, mat_line );
 							wireframe.position.set( i, j-3, k-3);
 							scene.add( wireframe );
 						}							
 					}
 		}	
+
+		
+		function color_field(field_arr) {
+			for (let i = 0; i < field_arr.length-1; ++i)
+				for (let j = 1; j < field_arr[i].length-1; ++j)
+					for (let k = 1; k < field_arr[i][j].length-1; ++k)
+					{
+						if (field_arr[i][j][k]) field_arr[i][j][k] = i+2;
+					}
+		}
 
 
 		function clearScene() {
