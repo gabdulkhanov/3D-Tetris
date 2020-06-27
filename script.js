@@ -6,8 +6,8 @@ window.onload = function() {
 		
 		var position_figure = {
 			x: 2,
-			y: 0,
-			z: 1
+			y: 1,
+			z: 2
 		};	
 		
 		var quantity = 0;
@@ -243,10 +243,11 @@ window.onload = function() {
 						
 					];
 		
-	
+		
 		/**************************/
 		
 		var rnd = Math.floor( Math.random()*figure.length );
+		var temp_figure = figure[rnd];
 		
 		var width = window.innerWidth;
 		var height = window.innerHeight;	
@@ -401,11 +402,13 @@ window.onload = function() {
 					addScene(rnd);					
 				};
 			}
-				
-			if (event.keyCode == 80) { /***p***/
-				pause = !pause;				
-				animate();
-				if (pause) text_input("Pause", 3);
+			
+			if (!gameOver(field)) {
+				if (event.keyCode == 80) { /***p***/
+					pause = !pause;				
+					animate();
+					if (pause) text_input("Pause", 3);
+				}
 			}
 			text_input("Score: " + quantity, 1);
 			renderer.render( scene, camera );	
@@ -456,34 +459,17 @@ window.onload = function() {
 			if (collision(figure[rnd], field, position_figure.x, position_figure.y, position_figure.z)) {
 				position_figure.y--;				
 				
-				update_field(figure[rnd], field, position_figure.x, position_figure.y, position_figure.z);
-				color_field(field);				
-				
+				update_field(figure[rnd], field, position_figure.x, position_figure.y, position_figure.z);				
 			
-				for (let m = field.length - 2; m > 0; m--) {
-					let f = true;
-					while(f) {
-						for (let n = 1; n < field[m].length - 1; n++)
-							for (let k = 1; k < field[m][n].length - 1; k++) {
-								if (!field[m][n][k]) f = false;
-							}	
-						if (f) {
-							for (let i = m; i > 0 ; i--) 
-								for (let j = 1; j < field[i].length - 1; j++)
-									for (let k = 1; k < field[i][j].length - 1; k++) {
-										field[i][j][k] = 0;
-										field[i][j][k] = field[i-1][j][k];
-								}
-							quantity++;
-						}				
-					}
-				}	
+				delete_line()
 				
+				color_field(field);	
 				
-				
+				figure[rnd] = temp_figure;
 				rnd = Math.floor( Math.random()*figure.length );
+				temp_figure = figure[rnd];
 				position_figure.x = 2;
-				position_figure.y = 0;
+				position_figure.y = 1;
 				position_figure.z = 2;
 			
 			}
@@ -496,28 +482,9 @@ window.onload = function() {
 		}
 	
 		
-		function update_field(figura_arr, field_arr, dx, dy, dz) {
-			for (let i = 0; i < figura_arr.length; ++i) 	
-				for (let j = 0; j < figura_arr[i].length; ++j)	
-					for (let k = 0; k < figura_arr[i][j].length; ++k){				
-						if (figura_arr[i][j][k]) field_arr[i+dy][j+dx][k+dz] = figura_arr[i][j][k];
-				}
-		}
-		
-		function collision(arr1, arr2, dx, dy, dz) {	
-				
-			for (let i = 0; i < arr1.length; ++i) 	
-				for (let j = 0; j < arr1[i].length; ++j)	
-					for (let k = 0; k < arr1[i][j].length; ++k) {	
-						if ((arr1[i][j][k])&&(arr2[i+dy][j+dx][k+dz])) { 					
-							return true;
-						}
-				}
-			return false;
-		}	
 		
 		
-		function addScene(random_figure) {
+		function addScene(random_figure) {		
 			for (let i = 0; i < figure[random_figure].length; ++i)
 				for (let j = 0; j < figure[random_figure][i].length; ++j)
 					for (let k = 0; k < figure[random_figure][i][j].length; ++k)					
@@ -539,11 +506,11 @@ window.onload = function() {
 							scene.add(cube);
 							
 						}
-					}
+					}			
 		}
 		
 		
-		function addScene_field() {
+		function addScene_field() {		
 			for (let i = 0; i < field.length; ++i)
 				for (let j = 0; j < field[i].length; ++j)
 					for (let k = 0; k < field[i][j].length; ++k)					
@@ -558,17 +525,8 @@ window.onload = function() {
 							scene.add( wireframe );
 						}							
 					}
+			
 		}	
-
-		
-		function color_field(field_arr) {
-			for (let i = 0; i < field_arr.length-1; ++i)
-				for (let j = 1; j < field_arr[i].length-1; ++j)
-					for (let k = 1; k < field_arr[i][j].length-1; ++k)
-					{
-						if (field_arr[i][j][k]) field_arr[i][j][k] = i+2;
-					}
-		}
 
 
 		function clearScene() {
@@ -588,61 +546,117 @@ window.onload = function() {
 		}
 		
 		
-		function rotate90_x(mas, reverse) {
-			var new_mas = [];
-			for (let i = 0; i < mas.length; i++) {
-				new_mas[i] = [];
-				for (let m = 0; m < mas[i].length; m++)
-				{
-					new_mas[i][m] = [];
-					for (let n = 0; n < mas[i][m].length; n++)
-					{
-						if (reverse) new_mas[i][m][n] = mas[i][n][mas[m].length-1-m];
-						else new_mas[i][m][n] = mas[i][n][m];				
-					}
-					if (!reverse) new_mas[i][m].reverse();
-				}
-			}
-			return new_mas;
-		}		
-		
-		
-		
-		function rotate90_y(mas, reverse) {
-			var new_mas = new_array3x3(mas);			
-			for (let i = 0; i < mas.length; i++) 
-				for (let m = 0; m < mas[i].length; m++)
-					for (let n = 0; n < mas[i][m].length; n++) {
-						if (reverse) new_mas[mas.length-i-1][n][m] = mas[n][i][m];	
-						else new_mas[i][mas.length-n-1][m] = mas[n][i][m];								
-					}		
-			return new_mas;
-		}			
-		
-		function new_array3x3(mas) {
-			var new_mas = [];
-			for (let i = 0; i < mas.length; i++) {
-				new_mas[i] = [];
-				for (let m = 0; m < mas[i].length; m++)
-				{
-					new_mas[i][m] = [];
-					
-					for (let n = 0; n < mas[i][m].length; n++) {					
-						new_mas[i][m][n] = 0;
+		function delete_line() {
+			for (let m = field.length - 2; m > 0; m--) {
+					let f = true;
+					while(f) {
+						for (let n = 1; n < field[m].length - 1; n++)
+							for (let k = 1; k < field[m][n].length - 1; k++) {
+								if (!field[m][n][k]) f = false;
+							}	
+						if (f) {
+							for (let i = m; i > 0 ; i--) 
+								for (let j = 1; j < field[i].length - 1; j++)
+									for (let k = 1; k < field[i][j].length - 1; k++) {
+										field[i][j][k] = 0;
+										field[i][j][k] = field[i-1][j][k];
+								}
+							quantity++;
+						}				
 					}
 				}
-			}
-			return new_mas;
-		}		
-
-
-		function gameOver(arr) {				
-			for (let n = 1; n < arr[1].length - 1; n++) 	
-				for (let m = 1; m < arr[1][m].length - 1; m++) {
-					if (arr[1][n][m]) return true;
-			}		
-			return false;
 		}
+		
+		/*****/
+		
+		
+		
+		
+		
+	function color_field(field_arr) {
+		for (let i = 0; i < field_arr.length-1; ++i)
+			for (let j = 1; j < field_arr[i].length-1; ++j)
+				for (let k = 1; k < field_arr[i][j].length-1; ++k) {					
+					if (field_arr[i][j][k]) field_arr[i][j][k] = i+2;
+				}
+	}
+	
+	
+	function update_field(figura_arr, field_arr, dx, dy, dz) {
+		for (let i = 0; i < figura_arr.length; ++i) 	
+			for (let j = 0; j < figura_arr[i].length; ++j)	
+				for (let k = 0; k < figura_arr[i][j].length; ++k) {				
+					if (figura_arr[i][j][k]) field_arr[i+dy][j+dx][k+dz] = figura_arr[i][j][k];
+			}
+	}		
+	
+	
+	function collision(arr1, arr2, dx, dy, dz) {					
+		for (let i = 0; i < arr1.length; ++i) 	
+			for (let j = 0; j < arr1[i].length; ++j)	
+				for (let k = 0; k < arr1[i][j].length; ++k) {	
+					if ((arr1[i][j][k])&&(arr2[i+dy][j+dx][k+dz])) { 					
+						return true;
+					}
+			}
+		return false;
+	}
+	
+	
+	function gameOver(arr) {				
+		for (let n = 1; n < arr[2].length - 1; n++) 	
+			for (let m = 1; m < arr[2][m].length - 1; m++) {
+				if (arr[2][n][m]) return true;
+		}		
+		return false;
+	}
+	
+	
+	function rotate90_x(arr, reverse) {
+		var new_arr = new_array3x3(arr);
+		for (let i = 0; i < arr.length; i++) {			
+			for (let m = 0; m < arr[i].length; m++)
+			{					
+				for (let n = 0; n < arr[i][m].length; n++)
+				{
+					if (reverse) new_arr[i][m][n] = arr[i][n][arr[m].length-1-m];
+					else new_arr[i][m][n] = arr[i][n][m];				
+				}
+				if (!reverse) new_arr[i][m].reverse();
+			}
+		}
+		return new_arr;
+	}		
+	
+	
+	function rotate90_y(arr, reverse) {
+		var new_arr = new_array3x3(arr);			
+		for (let i = 0; i < arr.length; i++) 
+			for (let m = 0; m < arr[i].length; m++)
+				for (let n = 0; n < arr[i][m].length; n++) {
+					if (reverse) new_arr[arr.length-i-1][n][m] = arr[n][i][m];	
+					else new_arr[i][arr.length-n-1][m] = arr[n][i][m];								
+				}		
+		return new_arr;
+	}			
+	
+	
+	function new_array3x3(arr) {
+		var new_arr = [];
+		for (let i = 0; i < arr.length; i++) {
+			new_arr[i] = [];
+			for (let m = 0; m < arr[i].length; m++)
+			{
+				new_arr[i][m] = [];					
+				for (let n = 0; n < arr[i][m].length; n++) {					
+					new_arr[i][m][n] = 0;
+				}
+			}
+		}
+		return new_arr;
+	}
+	
+	/***END_ONLOAD***/
 }
 
 
